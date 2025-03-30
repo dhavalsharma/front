@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Curate - Minimalist Content Curation</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --background: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --error: #ef4444;
+      --transition: 0.2s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    a:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+
+    button, .button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    button:hover, .button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    button:focus, .button:focus, input:focus, textarea:focus {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    button:disabled, .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 0.25rem;
+      font-size: 1rem;
+      background-color: var(--card);
+      transition: border-color var(--transition);
+    }
+
+    input:hover, textarea:hover {
+      border-color: var(--primary);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    .logo span {
+      color: var(--primary);
+    }
+
+    nav {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .feed-toggle {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .feed-toggle button {
+      background: none;
+      color: var(--text-secondary);
+      padding: 0.5rem 0.25rem;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+    }
+
+    .feed-toggle button.active {
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .card {
+      background-color: var(--card);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .submission {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .vote-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .vote-button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      padding: 0.25rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .vote-button:hover, .vote-button.active {
+      color: var(--primary);
+    }
+
+    .vote-count {
+      font-weight: bold;
+      font-size: 1.125rem;
+    }
+
+    .submission-content {
+      flex: 1;
+    }
+
+    .submission-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .submission-meta {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .submission-excerpt {
+      margin-bottom: 0.75rem;
+    }
+
+    .submission-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background-color: var(--background);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .modal {
+      background-color: var(--card);
+      border-radius: 0.5rem;
+      padding: 2rem;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.25rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 0.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .alert-success {
+      background-color: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+
+    .alert-error {
+      background-color: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--error);
+      color: var(--error);
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background-color: var(--primary);
+      color: white;
+    }
+
+    /* Animation classes */
+    .fade-in {
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .fade-up {
+      animation: fadeUp 0.3s ease;
+    }
+
+    @keyframes fadeUp {
+      from { 
+        opacity: 0; 
+        transform: translateY(10px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Accessibility-focused styles */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    .dark-mode {
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --background: #0f172a;
+      --card: #1e293b;
+      --text: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --border: #334155;
+    }
+
+    @media (max-width: 768px) {
+      .submission {
+        flex-direction: column;
+      }
+
+      .vote-buttons {
+        flex-direction: row;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">Curate<span>.</span></div>
+      <nav>
+        <button id="theme-toggle" aria-label="Toggle dark mode">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+        <button id="new-submission-button" class="button">New Submission</button>
+      </nav>
+    </header>
+
+    <main>
+      <div class="feed-toggle">
+        <button class="active" data-feed="trending">Trending</button>
+        <button data-feed="latest">Latest</button>
+        <button data-feed="top">Top</button>
+      </div>
+
+      <div id="submissions-container">
+        <!-- This will be populated with submissions -->
+      </div>
+    </main>
+
+    <!-- New Submission Modal (hidden by default) -->
+    <div id="new-submission-modal" class="modal-backdrop" style="display: none;">
+      <div class="modal fade-up">
+        <div class="modal-header">
+          <h2 class="modal-title">New Submission</h2>
+          <button class="close-button" aria-label="Close modal">&times;</button>
+        </div>
+        <form id="submission-form">
+          <div class="form-group">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" id="title" name="title" required>
+          </div>
+          <div class="form-group">
+            <label for="url" class="form-label">URL (optional)</label>
+            <input type="url" id="url" name="url">
+          </div>
+          <div class="form-group">
+            <label for="content" class="form-label">Content</label>
+            <textarea id="content" name="content" rows="5" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="tags" class="form-label">Tags (comma separated)</label>
+            <input type="text" id="tags" name="tags" placeholder="technology, design, productivity">
+          </div>
+          <div id="form-alert" class="alert" style="display: none;"></div>
+          <button type="submit" class="button">Submit</button>
+        </form>
+      </div>
+    </div>
+
+  <script>
+    // Sample data for demonstration
+    let submissions = [
+      {
+        id: 1,
+        title: "The Art of Minimalism in Web Design",
+        content: "Minimalism isn't just about removing elements; it's about distilling a design to its essential parts while maintaining functionality and purpose.",
+        author: "designUser",
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        votes: 42,
+        userVote: null,
+        tags: ["design", "web", "minimalism"]
+      },
+      {
+        id: 2,
+        title: "Designing Accessible Interfaces",
+        content: "Accessibility is not an afterthought but a fundamental aspect of good design that benefits all users, not just those with disabilities.",
+        author: "accessibleDev",
+        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+        votes: 31,
+        userVote: null,
+        tags: ["accessibility", "design", "inclusion"]
+      },
+      {
+        id: 3,
+        title: "Micro-interactions: Small Details, Big Impact",
+        content: "Subtle animations and feedback can significantly enhance user experience by providing context and guiding interactions without overwhelming users.",
+        author: "uxWizard",
+        timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+        votes: 28,
+        userVote: null,
+        tags: ["ux", "animation", "interaction"]
+      }
+    ];
+
+    // Current active feed
+    let activeFeed = "trending";
+
+    // DOM Elements
+    const submissionsContainer = document.getElementById("submissions-container");
+    const feedToggleButtons = document.querySelectorAll(".feed-toggle button");
+    const newSubmissionButton = document.getElementById("new-submission-button");
+    const newSubmissionModal = document.getElementById("new-submission-modal");
+    const closeModalButton = document.querySelector(".close-button");
+    const submissionForm = document.getElementById("submission-form");
+    const formAlert = document.getElementById("form-alert");
+    const themeToggle = document.getElementById("theme-toggle");
+
+    // Initialize the app
+    function init() {
+      renderSubmissions();
+      setupEventListeners();
+      checkUserPreferences();
+    }
+
+    // Render submissions based on active feed
+    function renderSubmissions() {
+      // Sort submissions based on active feed
+      let sortedSubmissions;
+      
+      switch(activeFeed) {
+        case "latest":
+          sortedSubmissions = [...submissions].sort((a, b) => 
+            new Date(b.timestamp) - new Date(a.timestamp));
+          break;
+        case "top":
+          sortedSubmissions = [...submissions].sort((a, b) => b.votes - a.votes);
+          break;
+        default: // trending
+          // For demo, we'll use a combination of recency and votes
+          sortedSubmissions = [...submissions].sort((a, b) => {
+            const aScore = b.votes * (1 / (1 + (Date.now() - new Date(b.timestamp)) / 36000000));
+            const bScore = a.votes * (1 / (1 + (Date.now() - new Date(a.timestamp)) / 36000000));
+            return aScore - bScore;
+          });
+      }
+
+      // Clear container
+      submissionsContainer.innerHTML = "";
+
+      // Add submissions
+      sortedSubmissions.forEach(submission => {
+        const submissionEl = createSubmissionElement(submission);
+        submissionsContainer.appendChild(submissionEl);
+      });
+    }
+
+    // Create a submission element
+    function createSubmissionElement(submission) {
+      const timeAgo = getTimeAgo(submission.timestamp);
+      
+      const submissionEl = document.createElement("div");
+      submissionEl.className = "card submission fade-in";
+      submissionEl.setAttribute("data-id", submission.id);
+      
+      submissionEl.innerHTML = `
+        <div class="vote-buttons">
+          <button class="vote-button up-vote ${submission.userVote === 'up' ? 'active' : ''}" aria-label="Upvote">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 19V5M5 12l7-7 7 7"/>
+            </svg>
+          </button>
+          <span class="vote-count">${submission.votes}</span>
+          <button class="vote-button down-vote ${submission.userVote === 'down' ? 'active' : ''}" aria-label="Downvote">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5v14M5 12l7 7 7-7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="submission-content">
+          <h3 class="submission-title">${submission.title}</h3>
+          <p class="submission-meta">Posted by ${submission.author} · ${timeAgo}</p>
+          <p class="submission-excerpt">${submission.content}</p>
+          <div class="submission-tags">
+            ${submission.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+          </div>
+        </div>
+      `;
+
+      // Add event listeners for vote buttons
+      const upVoteButton = submissionEl.querySelector(".up-vote");
+      const downVoteButton = submissionEl.querySelector(".down-vote");
+      const voteCount = submissionEl.querySelector(".vote-count");
+      
+      upVoteButton.addEventListener("click", () => {
+        handleVote(submission.id, "up", upVoteButton, downVoteButton, voteCount);
+      });
+      
+      downVoteButton.addEventListener("click", () => {
+        handleVote(submission.id, "down", upVoteButton, downVoteButton, voteCount);
+      });
+      
+      return submissionEl;
+    }
+
+    // Handle vote click
+    function handleVote(id, voteType, upButton, downButton, countEl) {
+      const index = submissions.findIndex(s => s.id === id);
+      if (index === -1) return;
+      
+      const submission = submissions[index];
+      const prevVote = submission.userVote;
+      
+      // Show micro-interaction feedback
+      upButton.classList.remove("active");
+      downButton.classList.remove("active");
+      
+      if (prevVote === voteType) {
+        // User is removing their vote
+        submission.userVote = null;
+        submission.votes += (voteType === "up" ? -1 : 1);
+      } else {
+        // User is changing vote or voting for the first time
+        if (voteType === "up") {
+          upButton.classList.add("active");
+          submission.votes += (prevVote === "down" ? 2 : 1);
+        } else {
+          downButton.classList.add("active");
+          submission.votes += (prevVote === "up" ? -2 : -1);
+        }
+        submission.userVote = voteType;
+      }
+      
+      // Update the vote count with subtle animation
+      countEl.textContent = submission.votes;
+      countEl.classList.add("fade-in");
+      setTimeout(() => countEl.classList.remove("fade-in"), 300);
+      
+      // Update submissions array
+      submissions[index] = submission;
+    }
+
+    // Format timestamp to "time ago" format
+    function getTimeAgo(timestamp) {
+      const msPerMinute = 60 * 1000;
+      const msPerHour = msPerMinute * 60;
+      const msPerDay = msPerHour * 24;
+      const msPerMonth = msPerDay * 30;
+      const msPerYear = msPerDay * 365;
+      
+      const elapsed = Date.now() - new Date(timestamp);
+      
+      if (elapsed < msPerMinute) {
+        const seconds = Math.floor(elapsed/1000);
+        return seconds + (seconds === 1 ? ' second ago' : ' seconds ago');   
+      } else if (elapsed < msPerHour) {
+        const minutes = Math.floor(elapsed/msPerMinute);
+        return minutes + (minutes === 1 ? ' minute ago' : ' minutes ago');   
+      } else if (elapsed < msPerDay) {
+        const hours = Math.floor(elapsed/msPerHour);
+        return hours + (hours === 1 ? ' hour ago' : ' hours ago');   
+      } else if (elapsed < msPerMonth) {
+        const days = Math.floor(elapsed/msPerDay);
+        return days + (days === 1 ? ' day ago' : ' days ago');   
+      } else if (elapsed < msPerYear) {
+        const months = Math.floor(elapsed/msPerMonth);
+        return months + (months === 1 ? ' month ago' : ' months ago');   
+      } else {
+        const years = Math.floor(elapsed/msPerYear);
+        return years + (years === 1 ? ' year ago' : ' years ago');   
+      }
+    }
+
+    // Set up event listeners
+    function setupEventListeners() {
+      // Feed toggle
+      feedToggleButtons.forEach(button => {
+        button.addEventListener("click", () => {
+          feedToggleButtons.forEach(b => b.classList.remove("active"));
+          button.classList.add("active");
+          activeFeed = button.dataset.feed;
+          renderSubmissions();
+        });
+      });
+      
+      // New submission modal
+      newSubmissionButton.addEventListener("click", () => {
+        newSubmissionModal.style.display = "flex";
+      });
+      
+      closeModalButton.addEventListener("click", () => {
+        newSubmissionModal.style.display = "none";
+        submissionForm.reset();
+        formAlert.style.display = "none";
+      });
+      
+      // Close modal when clicking outside
+      newSubmissionModal.addEventListener("click", (e) => {
+        if (e.target === newSubmissionModal) {
+          newSubmissionModal.style.display = "none";
+          submissionForm.reset();
+          formAlert.style.display = "none";
+        }
+      });
+      
+      // Form submission
+      submissionForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(submissionForm);
+        const newSubmission = {
+          id: submissions.length + 1,
+          title: formData.get("title"),
+          content: formData.get("content"),
+          url: formData.get("url") || null,
+          author: "currentUser", // In a real app, this would be the logged-in user
+          timestamp: new Date().toISOString(),
+          votes: 1, // Start with 1 vote (the submitter's)
+          userVote: "up", // The submitter automatically upvotes their submission
+          tags: formData.get("tags") ? formData.get("tags").split(",").map(tag => tag.trim()) : []
+        };
+        
+        // Add the new submission
+        submissions.unshift(newSubmission);
+        
+        // Show success message
+        formAlert.className = "alert alert-success";
+        formAlert.textContent = "Submission added successfully!";
+        formAlert.style.display = "block";
+        
+        // Reset form
+        submissionForm.reset();
+        
+        // Re-render submissions
+        renderSubmissions();
+        
+        // Close modal after delay
+        setTimeout(() => {
+          newSubmissionModal.style.display = "none";
+          formAlert.style.display = "none";
+        }, 1500);
+      });
+      
+      // Theme toggle
+      themeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+        
+        // Save preference to localStorage
+        if (document.body.classList.contains("dark-mode")) {
+          localStorage.setItem("theme", "dark");
+        } else {
+          localStorage.setItem("theme", "light");
+        }
+      });
+      
+      // Keyboard navigation
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && newSubmissionModal.style.display === "flex") {
+          newSubmissionModal.style.display = "none";
+          submissionForm.reset();
+          formAlert.style.display = "none";
+        }
+      });
+    }
+
+    // Check user preferences (dark mode)
+    function checkUserPreferences() {
+      // Check localStorage for theme preference
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "dark") {
+        document.body.classList.add("dark-mode");
+      } else if (savedTheme === "light") {
+        document.body.classList.remove("dark-mode");
+      } else {
+        // Check system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.body.classList.add("dark-mode");
+        }
+      }
+      
+      // Listen for system theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem("theme")) {
+          document.body.classList.toggle("dark-mode", e.matches);
+        }
+      });
+    }
+
+    // Initialize the app
+    init();
+  </script>
+</body>
+</html>
